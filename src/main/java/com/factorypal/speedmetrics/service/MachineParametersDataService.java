@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface MachineParametersDataService {
 
-    List<MachineParametersEntity> loadMachineParametersData(List<MachineParametersEntity> parametersEntityList);
+    MachineParametersEntity loadMachineParametersData(MachineParametersEntity parametersEntityList);
 
     List<MachineParametersEntity> loadMachineParametersDataFromFile(MultipartFile file) throws FactoryPalException;
 

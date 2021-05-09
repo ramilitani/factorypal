@@ -36,16 +36,13 @@ public class MachineParametersDataServiceImpl implements MachineParametersDataSe
     MachineParametersDataRepository machineParametersDataRepository;
 
     @Override
-    public List<MachineParametersEntity> loadMachineParametersData(List<MachineParametersEntity> parametersEntityList) {
+    public MachineParametersEntity loadMachineParametersData(MachineParametersEntity parametersEntity) {
+
+        validateMachineParametersEntity(parametersEntity);
 
         try {
-            validateMachineParametersEntity(parametersEntityList);
-            machineParametersDataRepository.saveAll(parametersEntityList);
-            return parametersEntityList;
-
-        } catch (FactoryPalException ex) {
-            logger.error(ex.getMessage());
-            throw ex;
+            machineParametersDataRepository.save(parametersEntity);
+            return parametersEntity;
 
         } catch (Exception ex) {
             logger.error(ex.getMessage());
@@ -66,7 +63,7 @@ public class MachineParametersDataServiceImpl implements MachineParametersDataSe
                     .filter(data -> {
                         MachineDataEntity machineDataEntity = machineDataRepository.findByKey(data.getMachineKey());
                         if (machineDataEntity == null) {
-                            throw new FactoryPalException(String.format("Machine Key %s doesn't exist.", data.getMachineKey()));
+                            throw new FactoryPalException(String.format("Machine Key %s doesn't exist.", data.getMachineKey()), HttpStatus.BAD_REQUEST);
                         }
                         return true;
                     }).collect(Collectors.toList());
@@ -94,9 +91,11 @@ public class MachineParametersDataServiceImpl implements MachineParametersDataSe
             machineParametersEntityList.stream()
                 .sorted((o1, o2) -> o2.getTimestamp().compareTo(o1.getTimestamp()))
                 .forEach(data -> {
-                  List limitParametersList = data.getParameters().stream()
-                          .limit(numberOfParameters).collect(Collectors.toList());
-                  data.setParameters(limitParametersList);
+                    if (numberOfParameters > 0) {
+                        List limitParametersList = data.getParameters().stream()
+                                .limit(numberOfParameters).collect(Collectors.toList());
+                        data.setParameters(limitParametersList);
+                    }
                 });
 
             return machineParametersEntityList;
@@ -139,25 +138,23 @@ public class MachineParametersDataServiceImpl implements MachineParametersDataSe
         return machineMetricsVOList;
     }
 
-    private void validateMachineParametersEntity(List<MachineParametersEntity> parametersEntityList) {
+    private void validateMachineParametersEntity(MachineParametersEntity parametersEntityList) {
 
-        if (parametersEntityList == null && parametersEntityList.isEmpty()) {
-            throw new FactoryPalException("Empty MachineParametersEntity passed.");
+        if (parametersEntityList == null || parametersEntityList.getParameters() == null || parametersEntityList.getParameters().isEmpty()) {
+            throw new FactoryPalException("Empty MachineParametersEntity passed.", HttpStatus.BAD_REQUEST);
         }
 
-        parametersEntityList.stream().forEach(data -> {
-            if (Strings.isBlank(data.getMachineKey())) {
-                throw new FactoryPalException("Empty machine key passed.");
-            }
+        if (Strings.isBlank(parametersEntityList.getMachineKey())) {
+            throw new FactoryPalException("Empty machine key passed.", HttpStatus.BAD_REQUEST);
+        }
 
-            MachineDataEntity machineDataEntity = machineDataRepository.findByKey(data.getMachineKey());
-            if (machineDataEntity == null) {
-                throw new FactoryPalException(String.format("Machine Key %s doesn't exist.", data.getMachineKey()));
-            }
+        MachineDataEntity machineDataEntity = machineDataRepository.findByKey(parametersEntityList.getMachineKey());
+        if (machineDataEntity == null) {
+            throw new FactoryPalException(String.format("Machine Key %s doesn't exist.", parametersEntityList.getMachineKey()), HttpStatus.BAD_REQUEST);
+        }
 
-            data.getParameters().forEach(parameter -> {
-                if (Strings.isBlank(parameter.getKey())) throw new FactoryPalException("Empty parameter key passed.");
-            });
+        parametersEntityList.getParameters().stream().forEach(parameter -> {
+            if (Strings.isBlank(parameter.getKey())) throw new FactoryPalException("Empty parameter key passed.", HttpStatus.BAD_REQUEST);
         });
     }
 }

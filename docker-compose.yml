@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+  api-database:
+    image: mongo:3.2.4
+    container_name: "api-database"
+    networks:
+      - backend
+    ports:
+      - 27017:27017
+    command: --smallfiles
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    depends_on:
+      - api-database
+    networks:
+      - backend
+
+networks:
+  backend:

@@ -97,19 +97,16 @@ public class MachineParameterDataServiceTest {
 
         loadMachineData();
 
-        List<MachineParametersEntity> sampleMachineParameters1 = getInvalidMachineKeyData();
         Assertions.assertThrows(FactoryPalException.class, () -> {
-            machineParametersDataService.loadMachineParametersData(sampleMachineParameters1);
+            machineParametersDataService.loadMachineParametersData(getInvalidMachineKeyData());
         });
 
-        List<MachineParametersEntity> sampleMachineParameters2 = getMachineKeyThatNotExistData();
         Assertions.assertThrows(FactoryPalException.class, () -> {
-            machineParametersDataService.loadMachineParametersData(sampleMachineParameters2);
+            machineParametersDataService.loadMachineParametersData(getMachineKeyThatNotExistData());
         });
 
-        List<MachineParametersEntity> sampleMachineParameters3 = getInvalidMachineParameterKeyData();
         Assertions.assertThrows(FactoryPalException.class, () -> {
-            machineParametersDataService.loadMachineParametersData(sampleMachineParameters3);
+            machineParametersDataService.loadMachineParametersData(getInvalidMachineParameterKeyData());
         });
     }
 
@@ -124,15 +121,13 @@ public class MachineParameterDataServiceTest {
         parametersFromMachine1.add(new Parameter("TS_setpoint_tail_length",15));
         parametersFromMachine1.add(new Parameter("perforation_length",16.5));
         parametersFromMachine1.add(new Parameter("core_interference",15));
-        MachineParametersEntity machineParametersEntity1 = new MachineParametersEntity("ajoparametrit", parametersFromMachine1);
-        sampleMachineParameters.add(machineParametersEntity1);
 
-        List<MachineParametersEntity> result = machineParametersDataService.loadMachineParametersData(sampleMachineParameters);
+        MachineParametersEntity result = machineParametersDataService.loadMachineParametersData(
+                new MachineParametersEntity("ajoparametrit", parametersFromMachine1));
 
         Assertions.assertNotNull(result);
-        Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals("ajoparametrit", result.get(0).getMachineKey());
-        Assertions.assertEquals(3, result.get(0).getParameters().size());
+        Assertions.assertEquals("ajoparametrit", result.getMachineKey());
+        Assertions.assertEquals(3, result.getParameters().size());
 
 
     }
@@ -234,35 +229,24 @@ public class MachineParameterDataServiceTest {
         machineParametersDataService.loadMachineParametersDataFromFile(multipartCsvFile);
     }
 
-    private List<MachineParametersEntity> getInvalidMachineKeyData() {
-        List<MachineParametersEntity> sampleMachineParameters = new ArrayList<>();
-
+    private MachineParametersEntity getInvalidMachineKeyData() {
         List<Parameter> parametersFromMachine1 = new ArrayList<>();
         parametersFromMachine1.add(new Parameter("TS_setpoint_tail_length",15));
         parametersFromMachine1.add(new Parameter("perforation_length",16.5));
-        MachineParametersEntity machineParametersEntity1 = new MachineParametersEntity("", parametersFromMachine1);
-        sampleMachineParameters.add(machineParametersEntity1);
-        return sampleMachineParameters;
+        return new MachineParametersEntity("", parametersFromMachine1);
     }
 
-    private List<MachineParametersEntity> getMachineKeyThatNotExistData() {
-        List<MachineParametersEntity> sampleMachineParameters = new ArrayList<>();
-
+    private MachineParametersEntity getMachineKeyThatNotExistData() {
         List<Parameter> parametersFromMachine1 = new ArrayList<>();
         parametersFromMachine1.add(new Parameter("TS_setpoint_tail_length",15));
         parametersFromMachine1.add(new Parameter("perforation_length",16.5));
-        MachineParametersEntity machineParametersEntity1 = new MachineParametersEntity("not_exist", parametersFromMachine1);
-        sampleMachineParameters.add(machineParametersEntity1);
-        return sampleMachineParameters;
+        return new MachineParametersEntity("not_exist", parametersFromMachine1);
     }
 
-    private List<MachineParametersEntity> getInvalidMachineParameterKeyData() {
-        List<MachineParametersEntity> sampleMachineParameters = new ArrayList<>();
+    private MachineParametersEntity getInvalidMachineParameterKeyData() {
         List<Parameter> parametersFromMachine1 = new ArrayList<>();
         parametersFromMachine1.add(new Parameter("",15));
         parametersFromMachine1.add(new Parameter("perforation_length",16.5));
-        MachineParametersEntity machineParametersEntity1 = new MachineParametersEntity("ajoparametrit", parametersFromMachine1);
-        sampleMachineParameters.add(machineParametersEntity1);
-        return sampleMachineParameters;
+        return new MachineParametersEntity("ajoparametrit", parametersFromMachine1);
     }
 }
